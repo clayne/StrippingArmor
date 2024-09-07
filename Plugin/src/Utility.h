@@ -38,6 +38,7 @@ namespace Utility
 	bool                IsMenuOpen(std::string MenuName, bool DialogOnly = true);
 	bool                IsMenuOthersOpen();
 	bool                IsMenuForSystemOpen();
+	bool                IsMenuForCraftingOpen();
 	bool                IsMenuForTradeOpen();
 	bool                IsMenuForTerminalOpen();
 	bool                IsMenuInGameOpen();
@@ -72,7 +73,10 @@ namespace Utility
 	RE::TESObjectMISC*                                          BoundObjectToMisc(RE::TESBoundObject* item);
 	RE::TESObjectWEAP*                                          BoundObjectToWeapon(RE::TESBoundObject* item);
 	std::unordered_map<RE::TESObjectREFR*, bool>                CollectRefsInCell(RE::TESObjectCELL* cell);
-	std::unordered_map<RE::TESObjectREFR*, bool>                CollectRefsInCellInRange(RE::TESObjectCELL* cell, RE::TESObjectREFR* player, float radius = 200.0);
+	std::unordered_map<RE::TESObjectREFR*, bool>                CollectRefsInCellInRange(RE::TESObjectCELL* cell, RE::TESObjectREFR* actor, float radius = 200.0);
+	std::unordered_map<RE::TESObjectREFR*, bool>                CollectRefsInCellInRangeAlt(RE::TESObjectCELL* cell, RE::TESObjectREFR* actor, float radius = 200.0);
+
+	RE::NiPoint3A                                               ConvertFromNP3ToNP3A(RE::NiPoint3 origin);
 
 
 	void AddItem(RE::TESObjectREFR* member, int itemFormID, int num);
@@ -98,4 +102,5 @@ namespace Utility
 	inline std::unordered_map<RE::TESObjectMISC*, int>          MiscForScanner;
 	inline std::string                                          ItemType;
 	inline int                                                  LogLevel = 0;
+	inline uint32_t                                             TESObjectCELL_references_offset = 0x70;
 }

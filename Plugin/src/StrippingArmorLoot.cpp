@@ -4,19 +4,25 @@ namespace StrippingArmorLoot
 {
 	void State_Loot()
 	{
+		Debug("in State_Loot: start");
+
 		SearchBodies();
 		MonitoringBodiesForLoot();
+
+		Debug("in State_Loot: end");
 	}
 
 	void SearchBodies()
 	{
+		Debug("in SearchBodies: start");
+
 		auto pairs = StrippingArmorCommon::CollectRefsInCell();
 		for (auto itr = pairs.begin(); itr != pairs.end(); ++itr) {
 			auto member = itr->first;
 			if (Utility::IsWrongForm(member, "SearchBodies"))
 				continue;
-			Debug(fmt::format("member: formID:{}", Utility::num2hex(member->formID)));
-			Debug(fmt::format("member:{}({})", member->GetFormEditorID(), Utility::num2hex(member->formID)));
+			//Debug(fmt::format("member: formID:{}", Utility::num2hex(member->formID)));
+			//Debug(fmt::format("member:{}({})", member->GetFormEditorID(), Utility::num2hex(member->formID)));
 
 			if (!Utility::IsValidNPC(member))
 				continue;
@@ -47,10 +53,14 @@ namespace StrippingArmorLoot
 			StateMachine::RemoveUnnecessaryMember();
 			Debug(fmt::format("RemoveUnnecessaryMember: finish:"));
 		}
+
+		Debug("in SearchBodies: end");
 	}
 
 	void SelectStatusForLoot(RE::TESObjectREFR* member)
 	{
+		Debug("in SelectStatusForLoot: start");
+
 		if (!(member && member->IsDead(true)))
 			return;
 
@@ -70,10 +80,14 @@ namespace StrippingArmorLoot
 		Debug(fmt::format("member: {}({}): stage:{}", member->GetFormEditorID(), Utility::num2hex(member->formID), num));
 
 		StateMachine::SetStage(member, stage, "SelectStatusForLoot");
+
+		Debug("in SelectStatusForLoot: end");
 	}
 
 	void MonitoringBodiesForLoot()
 	{
+		Debug("in MonitoringBodiesForLoot: start");
+
 		auto members = StateMachine::GetTargetBodiesAll();
 		bool needHouseKeep = false;
 		for (auto member : members) {
@@ -109,6 +123,8 @@ namespace StrippingArmorLoot
 		}
 		if (needHouseKeep)
 			StateMachine::RemoveUnnecessaryMember();
+
+		Debug("in MonitoringBodiesForLoot: end");
 	}
 
 	void ProcessForStageDead(RE::TESObjectREFR* member)

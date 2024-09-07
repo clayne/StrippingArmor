@@ -48,6 +48,8 @@ If you are unsure, please re-download the file for this mod or otherwise restore
 
 	void ReadIni()
 	{
+		Debug("in ReadIni: start");
+
 		SetTomlPath();
 
 		for (auto category : Categories) {
@@ -72,10 +74,14 @@ If you are unsure, please re-download the file for this mod or otherwise restore
 			SetTraditionalLootingOnly();
 
 		U::SetLogLevel(GetLogLevel());
+
+		Debug("in ReadIni: end");
 	}
 
 	void EsmNotLoadCheck()
 	{
+		Debug("in EsmNotLoadCheck: start");
+
 		if (!EsmCheck)
 			return;
 		auto        form = RE::TESForm::LookupByEditorID(UniqueEditorID);
@@ -85,10 +91,14 @@ If you are unsure, please re-download the file for this mod or otherwise restore
 		std::string msg = msg1 + msg2;
 		if (!form)
 			Utility::ExecuteCommandString(fmt::format("cgf \"debug.messagebox\" \"{}\"", msg));
+
+		Debug("in EsmNotLoadCheck: end");
 	}
 
 	void DumpSettings()
 	{
+		Debug("in DumpSettings: start");
+
 		for (auto category : Categories) {
 			auto boolMap = GetBoolMapByCategory(category);
 			for (auto itr = (*boolMap).begin(); itr != (*boolMap).end(); ++itr) {
@@ -105,10 +115,14 @@ If you are unsure, please re-download the file for this mod or otherwise restore
 				Debug(fmt::format("Int: category:{}, name:{}, value:{}", category, itr->first, itr->second));
 			}
 		}
+
+		Debug("in DumpSettings: end");
 	}
 
 	void SetTraditionalLootingOnly()
 	{
+		Debug("in SetTraditionalLootingOnly: start");
+
 		Info(fmt::format("StrippingArmor: TraditionalLootingOnlyOn. Disable other functions."));
 		SettingsBoolMapGeneralMajor["StrippingKeyOn"] = false;
 		SettingsBoolMapGeneralMajor["EffectShaderForStrippingOn"] = false;
@@ -124,6 +138,8 @@ If you are unsure, please re-download the file for this mod or otherwise restore
 
 		SettingsBoolMapCorpseVisualEffect["ChangingAppearanceOfCorpse"] = false;
 		SettingsBoolMapCorpseVisualEffect["EffectShaderForChangingCorpseOn"] = false;
+
+		Debug("in SetTraditionalLootingOnly: end");
 	}
 
 	//GeneralMajor

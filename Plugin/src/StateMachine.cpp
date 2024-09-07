@@ -257,8 +257,12 @@ namespace StateMachine
 
 		std::string msg = inDialog ? "DialogMap:" : "KeytappedMap:";
 		Debug(fmt::format("{}", msg));
+		Debug(fmt::format("before1"));
 		for (auto member : list) {
+			Debug(fmt::format("before2"));
 			Debug(fmt::format("\t{}({})", member->GetFormEditorID(), Utility::num2hex(member->formID)));
+			Debug(fmt::format("after2"));
 		}
+		Debug(fmt::format("after1"));
 	}
 }
