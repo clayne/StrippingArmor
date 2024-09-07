@@ -4,6 +4,8 @@ namespace StrippingArmorPickpocket
 {
 	void State_Pickpocket()
 	{
+		Debug("in State_Pickpocket: start");
+
 		if (Config::GetPerfectTouchOn()) {
 			auto pairs = StrippingArmorCommon::CollectRefsInCell();
 
@@ -23,15 +25,19 @@ namespace StrippingArmorPickpocket
 			}
 			return;
 		} else {
-			if (!StrippingArmorCommon::IsKeyPressed() || !Config::GetConditionPickingPocketOn())
+			if (!StrippingArmorCommon::IsKeyPressed("State_Pickpocket") || !Config::GetConditionPickingPocketOn())
 				return;
 
 			//AddKeywordForCandidates(LastTarget, true);
 		}
+
+		Debug("in State_Pickpocket: end");
 	}
 
 	void AddPickpocketItems(RE::TESObjectREFR* member)
 	{
+		Debug("in AddPickpocketItems: start");
+
 		int theftLevel = U::GetPerkLevel(RE::PlayerCharacter::GetSingleton(), 0x2c555b);  //Skill Theft
 		Info(fmt::format("debug: GetTraditionalLootingOn():{}", Config::GetTraditionalLootingOn()));
 		Info(fmt::format("debug: GetTraditionalLootingOn():{}", Config::SettingsBoolMapGeneralMajor["TraditionalLootingOnly"]));
@@ -65,16 +71,24 @@ namespace StrippingArmorPickpocket
 		}
 		Utility::ExecuteCommandString(fmt::format("cgf \"zzStrippingArmor.SAAddKeywordFromSFSE\" \"{}\" \"{}\"",
 			member->formID, "SAPickpocketStart"));
+
+		Debug("in AddPickpocketItems: end");
 	}
 
 	bool AllowTypeByTheftLevel(std::string type, int level)
 	{
+		Debug("in AllowTypeByTheftLevel: start");
+
 		Info(fmt::format("AllowTypeByTheftLevel: type:{}, level:{}, PPLevel:{}", type, level, Config::GetPPLevel(type)));
 		return level >= Config::GetPPLevel(type);
+
+		Debug("in AllowTypeByTheftLevel: end");
 	}
 
 	void CheckPickpocket(RE::TESObjectREFR* member)
 	{
+		Debug("in CheckPickpocket: start");
+
 		if (!member)
 			return;
 		//Info(format("CheckPickpocket: {}", member->GetFormEditorID()));
@@ -122,10 +136,14 @@ namespace StrippingArmorPickpocket
 		}
 		if (!rest)
 			StrippingArmorCommon::AddKeyword(member, "SAPickpocketDone");
+
+		Debug("in CheckPickpocket: end");
 	}
 
 	bool HasPickpocketItems(RE::TESObjectREFR* member)
 	{
+		Debug("in HasPickpocketItems: start");
+
 		if (!member)
 			return false;
 		if (Utility::HasKeyword(member, "SAPickpocketStart"))
@@ -140,11 +158,15 @@ namespace StrippingArmorPickpocket
 				return true;
 		}
 		//Info(format("HasPickpocketItems:{} end", member->GetFormEditorID()));
+
+		Debug("in HasPickpocketItems: end");
 		return false;
 	}
 
 	std::unordered_map<std::string, RE::TESObjectWEAP*> GetPickpocketFlagItems(RE::TESObjectREFR* member)
 	{
+		Debug("in GetPickpocketFlagItems: start");
+
 		std::unordered_map<std::string, RE::TESObjectWEAP*> result;
 		if (!member)
 			return result;
@@ -163,11 +185,15 @@ namespace StrippingArmorPickpocket
 			//Info(fmt::format("    item:{}, part:{}", item->GetFormEditorID(), Misc2PartMap[item->GetFormEditorID()]));
 		}
 		//Info(format("GetPickpocketFlagItems:{} end", member->GetFormEditorID()));
+
+		Debug("in GetPickpocketFlagItems: end");
 		return result;
 	}
 
 	void HouseKeepPickpocket()
 	{
+		Debug("in HouseKeepPickpocket: start");
+
 		for (auto member : StateMachine::GetPickpocketTargetList()) {
 			Debug(fmt::format("HouseKeepPickpocket: member:{}({})", member->GetFormEditorID(), Utility::num2hex(member->formID)));
 			auto pairs = GetPickpocketFlagItems(member);
@@ -178,19 +204,25 @@ namespace StrippingArmorPickpocket
 			RemovePickpocketKeywords(member);
 		}
 		StateMachine::ClearListForPickpocketTarget();
+
+		Debug("in HouseKeepPickpocket: end");
 	}
 
 	void RemovePickpocketKeywords(RE::TESObjectREFR* member)
 	{
+		Debug("in RemovePickpocketKeywords: start");
+
 		if (member == nullptr)
 			return;
 		auto scriptMethod = "RemovePickpocketKeywords";
 		Utility::ExecuteCommandString(fmt::format("cgf \"zzStrippingArmor.{}\" {}", scriptMethod, member->formID));
+
+		Debug("in RemovePickpocketKeywords: end");
 	}
 
 	std::unordered_map<RE::TESObjectARMO*, std::string> GetArmorTypes(RE::TESObjectREFR* actor)
 	{
-		Info("GetArmorTypes Start:");
+		Info("in GetArmorTypes: start");
 		std::unordered_map<RE::TESObjectARMO*, std::string> result;
 		auto                                                armors = Utility::CollectEquipArmors(actor);
 		for (auto itr = armors.begin(); itr != armors.end(); ++itr) {
@@ -198,7 +230,7 @@ namespace StrippingArmorPickpocket
 				continue;
 			result[itr->first] = Utility::GetArmorType(itr->first);
 		}
-		Info("GetArmorTypes Finish:");
+		Info("in GetArmorTypes: end");
 		return result;
 	}
 

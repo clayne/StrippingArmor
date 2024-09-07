@@ -1,5 +1,4 @@
 #pragma once
-#include "DKUtil/Hook.hpp"
 #include "PCH.h"
 #include "Utility.h"
 #include "Config.h"
@@ -25,16 +24,33 @@ namespace Main
 	}
 }
 
-DLLEXPORT bool SFSEAPI SFSEPlugin_Load(const SFSE::LoadInterface* a_sfse)
+extern "C" DLLEXPORT constinit auto SFSEPlugin_Version = []() noexcept {
+	SFSE::PluginVersionData data{};
+
+	data.PluginVersion(Plugin::Version);
+	data.PluginName(Plugin::NAME);
+	data.AuthorName(Plugin::AUTHOR);
+
+	// REL::ID usage instead of REL::Offset
+	data.UsesAddressLibrary(true);
+	data.UsesSigScanning(true);
+
+	data.CompatibleVersions({ SFSE::RUNTIME_LATEST });
+
+	return data;
+}();
+
+extern "C" DLLEXPORT bool SFSEAPI SFSEPlugin_Load(const SFSE::LoadInterface* a_sfse)
+
+//DLLEXPORT bool SFSEAPI SFSEPlugin_Load(const SFSE::LoadInterface* a_sfse)
 {
 #ifndef NDEBUG
 	MessageBoxA(NULL, "Loaded. You can now attach the debugger or continue execution.", Plugin::NAME.data(), NULL);
 #endif
 
-	SFSE::Init(a_sfse, false);
-	DKUtil::Logger::Init(Plugin::NAME, std::to_string(Plugin::Version));
-	INFO("{} v{} loaded", Plugin::NAME, Plugin::Version);
-
+	SFSE::Init(a_sfse, true);
+	Info(fmt::format("{} v{} loaded", Plugin::NAME, Plugin::Version));
+	Info("test");
 	if (const auto messaging{ SFSE::GetMessagingInterface() }; !messaging->RegisterListener(Listener))
 		return false;
 	CreateThread(NULL, 0, Main::MainLoop, NULL, 0, NULL);

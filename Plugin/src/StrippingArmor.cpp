@@ -5,7 +5,7 @@ namespace StrippingArmor
 	void MainLoop()
 	{
 		Config::ReadIni();
-
+		bool isext = false;
 		while (true) {
 			Sleep(Config::GetTimePerFrame());
 			if (!Utility::InGameScene())
@@ -30,17 +30,22 @@ namespace StrippingArmor
 
 	void ResetParameter()
 	{
-		Debug(fmt::format("ResetParameter"));
+		Debug("in ResetParameter: start");
+
 		Events::NeedReset = false;
 		StrippingArmorCommon::WaitCount = 0;
 		
 		StrippingArmorLoot::ResetParameter();
 		StateMachine::ClearListForPickpocketTarget();
 		StateMachine::ClearListForForKeytap();
+
+		Debug("in ResetParameter: end");
 	}
 
 	void StateSelector()
 	{
+		Debug("in StateSelector: start");
+
 		if (Utility::IsMenuOpen("DialogueMenu")) {
 			StrippingArmorByKey::State_Dialogue();
 		} else if (Utility::IsMenuOpen("PickpocketMenu")) {
@@ -56,5 +61,7 @@ namespace StrippingArmor
 
 		if (!Utility::IsMenuOpen("DialogueMenu")) 
 			StrippingArmorByKey::HouseKeepByKey();
+
+		Debug("in StateSelector: end");
 	}
 }

@@ -41,7 +41,7 @@ namespace StrippingArmorCommon
 
 	RE::TESObjectARMO* GetArmor(std::string editorID);
 	void               ToggleBodyRoute(RE::TESObjectREFR* member);
-	bool               IsKeyPressed();
+	bool               IsKeyPressed(std::string debug = "");
 	bool               IsToggleKeyPressed();
 	bool               HasArmorsForLoot(RE::TESObjectREFR* actor);
 	void               RemoveCandidateKeywords(RE::TESObjectREFR* member);

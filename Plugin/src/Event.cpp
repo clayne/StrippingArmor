@@ -6,7 +6,7 @@ namespace Events
 
 	RE::BSEventNotifyControl EventHandlerForMenu::ProcessEvent(const RE::MenuOpenCloseEvent& a_event, RE::BSTEventSource<RE::MenuOpenCloseEvent>*)
 	{
-		Debug(format("Menu: name:{}, opening:{}", a_event.menuName.c_str(), a_event.opening));
+		Info(format("Menu: name:{}, opening:{}", a_event.menuName.c_str(), a_event.opening));
 		//for future release
 		if (a_event.menuName == "MainMenu" and a_event.opening) {
 			mainMenuOpened = true;

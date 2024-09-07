@@ -4,6 +4,8 @@ namespace StrippingArmorByKey
 {
 	void State_Dialogue()
 	{
+		Debug("in State_Dialogue: start");
+
 		if (!DialogTarget) {
 			StateMachine::ClearListForForKeytap();
 			CallAndCheckDialogTarget();
@@ -13,9 +15,10 @@ namespace StrippingArmorByKey
 			AddKeywordForCandidates(DialogTarget, true);
 			AddKeywordMonitoring(true);
 		} else {
-			if (StrippingArmorCommon::IsKeyPressed())
+			if (StrippingArmorCommon::IsKeyPressed("from State_Dialog"))
 				ProcessByKey(true);
 		}
+		Debug("in State_Dialogue: end");
 	}
 
 	void CallAndCheckDialogTarget()
@@ -36,33 +39,37 @@ namespace StrippingArmorByKey
 
 	void State_ToggleByKey()
 	{
+		Debug("in State_ToggleByKey: start");
 		if (!Config::GetToggleNormalOrOthersOn())
 			return;
 		if (StrippingArmorCommon::IsToggleKeyPressed())
 			ToggleArmorsByKey();
+		Debug("in State_ToggleByKey: end");
 	}
 
 	void State_StrippingByKey()
 	{
+		Debug("in State_StrippingByKey: start");
+
 		if (!Config::GetStrippingKeyOn())
 			return;
-		if (StrippingArmorCommon::IsKeyPressed() || Config::GetDebugExecuteToCrossRefActorForcedOn()) {
+		if (StrippingArmorCommon::IsKeyPressed("from_State_StrippingByKey") || Config::GetDebugExecuteToCrossRefActorForcedOn()) {
 			bool bForced = Config::GetDebugExecuteToAllActorsOn();
 			SearchTargetsByKey(bForced);
 		}
+		Sleep(Config::GetTimePerFrame());
 		AddKeywordMonitoring();
 		ProcessByKey(false);
+		Debug("in State_Dialogue: end");
 	}
 
 	void SearchTargetsByKey(bool bForced)
 	{
-		auto pairs = StrippingArmorCommon::CollectRefsInCell();
-
+		auto  pairs = StrippingArmorCommon::CollectRefsInCell();
 		for (auto itr = pairs.begin(); itr != pairs.end(); ++itr) {
 			auto member = itr->first;
 			if (!Utility::IsValidNPC(member))
 				continue;
-
 			if (StrippingArmorCommon::HasArmorsForLoot(member)) {
 				AddKeywordForCandidates(member, bForced);
 			}
@@ -117,9 +124,9 @@ namespace StrippingArmorByKey
 	void ProcessByKey(bool inDialog)
 	{
 		std::vector<RE::TESObjectREFR*> list;
-		//Debug("in ProcessByKey:");
-		//StateMachine::ForDebugGetMember(true);
-		//StateMachine::ForDebugGetMember(false);
+		Debug("in ProcessByKey: start");
+		StateMachine::ForDebugGetMember(true);
+		StateMachine::ForDebugGetMember(false);
 
 		for (auto member : StateMachine::GetForKeytapList(inDialog)) {
 			if (member->IsDead(true)) {
@@ -127,8 +134,8 @@ namespace StrippingArmorByKey
 				StrippingArmorCommon::EquipDummysuit(member);
 				StateMachine::SetStage(member, StateMachine::STAGE::kLooted, "ProcessByKey");
 			} else {
-				//std::string msg = inDialog ? "in Dialog" : "in KeyPressed";
-				//Debug(fmt::format("Debug: {}", msg));
+				std::string msg = inDialog ? "in Dialog" : "in KeyPressed";
+				Debug(fmt::format("Debug: {}", msg));
 				DropEquipItems(member);
 				StrippingArmorCommon::EquipDummysuit(member);
 			}
@@ -140,6 +147,7 @@ namespace StrippingArmorByKey
 		for (auto member : list) {
 			StateMachine::RemoveFromListForKeytap(member);
 		}
+		Debug("in ProcessByKey: end");
 	}
 
 	void AddKeywordForDialogTarget(RE::TESObjectREFR* member)
@@ -219,9 +227,13 @@ namespace StrippingArmorByKey
 
 	void HouseKeepByKey()
 	{
+		Debug("in HouseKeepByKey: start");
+
 		if (DialogTarget) {
 			StateMachine::RemoveFromListForKeytap(DialogTarget);
 		}
 		DialogTarget = nullptr;
+
+		Debug("in HouseKeepByKey: end");
 	}
 }

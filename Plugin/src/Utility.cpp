@@ -12,7 +12,7 @@ namespace Utility
 	{
 		std::string command = fmt::format("{}.{}", num2hex(formID), subCommand);
 		if (formID == 0x0) {
-			ERROR(fmt::format("ERROR: invalid command:{}", command));
+			//ERROR(fmt::format("ERROR: invalid command:{}", command));
 			return;
 		}
 		ExecuteCommandString(command);
@@ -44,7 +44,9 @@ namespace Utility
 
 	void SetLogLevel(int level)
 	{
+		int before = level;
 		LogLevel = level;
+		Notification(fmt::format("SetLogLevel: {} => {}", before, LogLevel));
 	}
 
 	void Error(std::string message)
@@ -100,6 +102,8 @@ namespace Utility
 	{
 		if (IsMenuForSystemOpen())
 			return true;
+		if (IsMenuForCraftingOpen())
+			return true;
 		if (IsMenuForTerminalOpen())
 			return true;
 		if (IsMenuForTradeOpen())
@@ -117,6 +121,13 @@ namespace Utility
 	bool IsMenuForSystemOpen()
 	{
 		if (RE::UI::GetSingleton()->IsMenuOpen("PauseMenu") || RE::UI::GetSingleton()->IsMenuOpen("Console") || RE::UI::GetSingleton()->IsMenuOpen("FaderMenu") || RE::UI::GetSingleton()->IsMenuOpen("LoadingMenu") || RE::UI::GetSingleton()->IsMenuOpen("MainMenu") || RE::UI::GetSingleton()->IsMenuOpen("GalaxyStarMapMenu"))
+			return true;
+		return false;
+	}
+
+	bool IsMenuForCraftingOpen()
+	{
+		if (RE::UI::GetSingleton()->IsMenuOpen("ResearchMenu") || RE::UI::GetSingleton()->IsMenuOpen("ArmorCraftingMenu") || RE::UI::GetSingleton()->IsMenuOpen("FaderMenu") || RE::UI::GetSingleton()->IsMenuOpen("FoodCraftingMenu") || RE::UI::GetSingleton()->IsMenuOpen("DrugsCraftingMenu") || RE::UI::GetSingleton()->IsMenuOpen("IndustrialCraftingMenu") || RE::UI::GetSingleton()->IsMenuOpen("WeaponsCraftingMenu"))
 			return true;
 		return false;
 	}
@@ -600,8 +611,10 @@ namespace Utility
 			return RefsForScanner;
 
 		auto scanner = [](const RE::NiPointer<RE::TESObjectREFR>& ref) -> RE::BSContainer::ForEachResult {
+			Debug("test: in loop");
 			auto obj = ref.get();
-			//Info(fmt::format("CollectInventoryMiscItems: item id:{}", num2hex(item.object->formID)));
+			if (obj)
+				Info(fmt::format("CollectRefsInCell: obj id:{}", num2hex(obj->formID)));
 			if (IsValidNPC(obj))
 				RefsForScanner[obj] = true;
 			return RE::BSContainer::ForEachResult::kContinue;
@@ -610,25 +623,103 @@ namespace Utility
 		return RefsForScanner;
 	}
 
-	std::unordered_map<RE::TESObjectREFR*, bool> CollectRefsInCellInRange(RE::TESObjectCELL* cell, RE::TESObjectREFR* player, float radius)
-	{
-		RefsForScanner.clear();
-		if (cell == nullptr || player == nullptr)
-			return RefsForScanner;
-		auto origin = player->GetPosition();
+	template<typename T>
+    T* GetMember(void* base, std::ptrdiff_t offset) {
+        auto address = std::uintptr_t(base) + offset;
+        auto reloc = REL::Relocation<T*>(address);
+        return reloc.get();
+    }
 
-		auto scanner = [](const RE::NiPointer<RE::TESObjectREFR>& ref) -> RE::BSContainer::ForEachResult {
-			auto obj = ref.get();
-			//if(obj)
-			//	Info(fmt::format("CollectInventoryMiscItems: obj id:{}", num2hex(obj->formID)));
-			if (!IsWrongForm(obj, "CollectRefsInCellInRange")) {
-				if (IsValidNPC(obj))
-					RefsForScanner[obj] = true;
-			}
-			return RE::BSContainer::ForEachResult::kContinue;
-		};
-		cell->ForEachReferenceInRange(origin, radius, scanner);
+	std::unordered_map<RE::TESObjectREFR*, bool> CollectRefsInCellInRangeAlt(RE::TESObjectCELL* cell, RE::TESObjectREFR* actor, float radius)
+	{
+		uint32_t cellAddr = reinterpret_cast<uint32_t>(cell);
+		auto references = GetMember<RE::BSTArray<RE::NiPointer<RE::TESObjectREFR>>>(cell, TESObjectCELL_references_offset);
+		std::unordered_map<RE::TESObjectREFR*, bool> RefsForScanner;
+        for (const auto& ref : *references) {
+			if (!ref)
+				continue;
+			auto refr = ref.get();
+			if (!refr->IsActor())
+				continue;
+			Debug(fmt::format("formID:{:x}, editorID:{}", refr->formID, refr->GetFormEditorID()));
+        }
+        for (const auto& ref : *references) {
+			if (!ref)
+				continue;
+			auto refr = ref.get();
+			if (!refr->IsActor())
+				continue;
+			Debug(fmt::format("formID:{:x}, editorID:{}", refr->formID, refr->GetFormEditorID()));
+			if (actor->GetPosition().GetDistance(refr->GetPosition()) > radius)
+				continue;
+			RefsForScanner[refr] = true;
+        }
 		return RefsForScanner;
+	}
+
+	std::unordered_map<RE::TESObjectREFR*, bool> CollectRefsInCellInRange(RE::TESObjectCELL* cell, RE::TESObjectREFR* actor, float radius)
+	{
+		//RefsForScanner.clear();
+		//if (cell == nullptr || actor == nullptr)
+		//	return RefsForScanner;
+		//auto origin = actor->GetPosition();
+
+		//auto scanner = [](const RE::NiPointer<RE::TESObjectREFR>& ref) -> RE::BSContainer::ForEachResult {
+		//	auto obj = ref.get();
+		//	if(obj)
+		//		Info(fmt::format("CollectRefsInCellInRange: obj id:{}", num2hex(obj->formID)));
+		//	if (!IsWrongForm(obj, "CollectRefsInCellInRange")) {
+		//		if (IsValidNPC(obj))
+		//			RefsForScanner[obj] = true;
+		//	}
+		//	return RE::BSContainer::ForEachResult::kContinue;
+		//};
+
+		//Debug("before: CollectRefsInCellInRange");
+		////cell->ForEachReferenceInRange(ConvertFromNP3ToNP3A(origin), radius, scanner);
+		//cell->ForEachReference(scanner);
+		//Debug("after : CollectRefsInCellInRange");
+		//auto cworld = cell->cellWorldspace;
+		//if (cworld == nullptr) {
+		//	Debug("cworld is null");
+		//} else {
+		//	Debug(fmt::format("cworld:{}", cworld->GetFormEditorID()));
+		//}
+		//
+		//auto np3 = ConvertFromNP3ToNP3A(origin);
+
+		//Debug(fmt::format("origin: {}, {}, {}", np3.x, np3.y, np3.z));
+		//auto refs = cell->references;
+		//if (refs.empty()) {
+		//	Debug("refs is empty");
+		//} else {
+		//	Debug("refs is NOT empty");
+
+		//	for (auto ref : refs) {
+		//		auto obj = ref.get();
+		//		Debug(fmt::format("obj: formID:{}", obj->formID));
+		//	}
+		//}
+		//
+		//Debug(fmt::format("cell: cell->IsExterior:{}", cell->IsExterior()));
+		////Debug(fmt::format("cell: cell->cellData:{}", cell->cellData.exterior->cellX));
+		//auto ref = RE::PlayerCharacter::GetSingleton()->crosshairRef;
+		//if (ref == nullptr) {
+		//	Debug("crosshair is null");
+		//} else {
+		//	Debug(fmt::format("ref is {}({})", num2hex(ref->formID), ref->GetFormEditorID())); 
+		//}
+		//return RefsForScanner;
+	}
+
+	RE::NiPoint3A ConvertFromNP3ToNP3A(RE::NiPoint3 origin)
+	{
+		RE::NiPoint3A np3a;
+		np3a.x = origin.x;
+		np3a.y = origin.y;
+		np3a.z = origin.z;
+
+		return np3a;
 	}
 
 	bool IsWrongForm(RE::TESObjectREFR* member, std::string debugMsg)

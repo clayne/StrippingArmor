@@ -102,10 +102,7 @@ namespace StrippingArmorCommon
 			return nullptr;
 		}
 
-		auto cell = Player->parentCell;
-		if (cell == nullptr)
-			Debug(format("ERROR: can't get parentCell"));
-		return cell;
+		return Player->parentCell;
 	}
 
 	std::unordered_map<RE::TESObjectREFR*, bool> CollectRefsInCell()
@@ -116,7 +113,7 @@ namespace StrippingArmorCommon
 			return result;
 		bool  DebugOn = Config::GetDebugExecuteToAllActorsOn();
 		float radius = DebugOn ? float(Config::GetCellSearchRadiusDebug()) : float(Config::GetCellSearchRadius());
-		return Utility::CollectRefsInCellInRange(cell, StrippingArmorCommon::Player, radius);
+		return Utility::CollectRefsInCellInRangeAlt(cell,StrippingArmorCommon::Player, radius);
 	}
 
 
@@ -349,7 +346,7 @@ namespace StrippingArmorCommon
 		return false;
 	}
 
-	bool IsKeyPressed()
+	bool IsKeyPressed(std::string debug)
 	{
 		if (!Config::GetStrippingKeyOn())
 			return false;
@@ -361,7 +358,7 @@ namespace StrippingArmorCommon
 			return false;
 		bool result = SFSE::WinAPI::GetKeyState(Config::GetStrippingKeyNumber()) & 0x8000;
 		if (result) {
-			Debug(fmt::format("IsKeyPressed"));
+			Debug(fmt::format("IsKeyPressed: {}", debug));
 			WaitCount = WaitCountPlus;
 		}
 		return result;
